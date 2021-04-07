@@ -3,8 +3,8 @@ from ServicesKeys import marvel_api_public_key
 from ServicesKeys import marvel_api_private_key
 from flask import Flask
 from flask import abort 
-from flask import jsonify
 from flask import request
+from requests.auth import HTTPBasicAuth
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
@@ -15,28 +15,28 @@ import hashlib
 
 
 app = Flask(__name__)
-auth = HTTPBasicAuth()
+authenticate = HTTPBasicAuth()
 
 #dictionary holding the users for the API
 users = {
     "admin" : generate_password_hash("secret"),
 }
 
-@auth.verify_password
+@authenticate.verify_password
 def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
 
 @app.route('/')
-@auth.login_required
+@authenticate.login_required
 def index():
 
-    return f"""<h1>Welcome {auth.current_user()} to the Services API!</h1>
+    return f"""<h1>Welcome {authenticate.current_user()} to the Services API!</h1>
             <p>You can access the Marvel API from this API!</p>"""
 
 @app.route('/Marvel') #Will only accpet HTTP GET requests
-@auth.login_required
+@authenticate.login_required
 def get_marvel_stories():
     if 'story' in request.args:
         #setting up for requesting from the marvel API using server-side authentication
@@ -48,29 +48,56 @@ def get_marvel_stories():
 
         data = r.json()
 
-        return data
+        return data["data"]["results"][0]["description"]
 
     else:
         abort(400) #return an abort message with HTTP status code 400 (Bad Request)
 
 #The following routes will make post requests which will be turned into HTTP GET requests by the scraper
-@app.route('/Weather', methods = ['POST']) #Will accept HTTP POST requests
-@auth.login_required
-def get_weather():
+@app.route('/Weather/<city>', methods = ['POST']) #Will accept HTTP POST requests
+@authenticate.login_required
+def post_weather(city):
 
-    return """ <h1> A temporary placeholder response 1 </h1> """
+    #get the username and password for the scraper from the request body (the -d parameter)
+    scraper_username = request.form["user"]
+    scraper_password = request.form["pass"]
 
-@app.route('/COVID')
-@auth.login_required
-def get_covid_data():
+    r = requests.get(f'http://127.0.0.1:8081/Weather/{city}', auth = (scraper_username, scraper_password))
+    if r.status_code  == 200:
+        return r.json()
+    
+    elif r.status_code == 401:
+        abort(401)
+    
+    else:
+        abort(400)
 
-    return """ <h1> A temporary placeholder response 2 </h1> """
 
-@app.route('/Update') #Will only accept HTTP POST requests
-@auth.login_required
+
+@app.route('/COVID/<state>', methods = ['POST'])
+@authenticate.login_required
+def post_covid_data(state):
+    #get the username and password for the scraper from the request body (the -d parameter)
+    scraper_username = request.form["user"]
+    scraper_password = request.form["pass"]
+
+    r = requests.get(f'http://127.0.0.1:8081/COVID/{state}', auth = (scraper_username, scraper_password))
+    
+    #This might or might not need to be changed depending how the scraping works
+    if r.status_code  == 200:
+        return r.json()
+    
+    elif r.status_code == 401:
+        abort(401)
+    
+    else:
+        abort(400)
+
+@app.route('/Update', methods = ['POST']) #Will only accept HTTP POST requests
+@authenticate.login_required
 def post_user_pass():
 
-    #Make sure to insert new user in dictionary of users
+    
     return """ <h1> A temporary placeholder response 3 </h1> """
 
 if __name__== "__main__":
