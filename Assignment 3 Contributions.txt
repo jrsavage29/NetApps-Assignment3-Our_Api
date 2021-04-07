@@ -1,0 +1,15 @@
+Contributions for Assignment 3:
+
+Jamahl
+- Setup API keys and base files (e.g. scraper.py and service.py)
+- Setup basic http authentication
+- Setup routes required for project (not fully implemented)
+- Completed Marvel API route requests
+-
+
+Chance
+-
+-
+-
+-
+-
