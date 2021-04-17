@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+##!/usr/bin/env python3
 from ScraperKeys import weather_api_public_key
 from flask import Flask 
 from flask import request
@@ -7,24 +7,22 @@ from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 import requests
 import json
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  
 
 app = Flask(__name__)
 authenticate = HTTPBasicAuth()
 
-# dictionary holding the users for the API
+#dictionary holding the users for the API
 users = {
-    "admin": generate_password_hash("Secret"),
+    "admin" : generate_password_hash("Secret"),
 }
 
-
-# code used to verify the possible users for the API
+#code used to verfiy the possible users for the API
 @authenticate.verify_password
 def verify_password(username, password):
     if username in users and \
             check_password_hash(users.get(username), password):
         return username
-
 
 @app.route('/')
 @authenticate.login_required
@@ -37,11 +35,11 @@ def index():
                         <li> And even add new Flask Usernames and Passwords </li>
                     </u1>"""
 
-
-# get details on Weather by city
-@app.route('/Weather/<city>', methods=['GET']) #Will accept HTTP GET requests
+#get details on Weather by city
+@app.route('/Weather/<city>', methods = ['GET']) #Will accept HTTP GET requests
 @authenticate.login_required
 def get_weather(city):
+
     place = city
     r = requests.get(f"http://api.openweathermap.org/data/2.5/weather?q={place}&appid={weather_api_public_key}")
     data = r.json()
@@ -53,9 +51,8 @@ def get_weather(city):
     json_string = json.dumps(weather_data)
     return json_string
 
-
-# get details on COVID by state from this website: https://www.worldometers.info/coronavirus/country/us/
-@app.route('/COVID/<state>', methods=['GET']) #Will accept HTTP GET requests
+#get details on COVID by state from this website: https://www.worldometers.info/coronavirus/country/us/
+@app.route('/COVID/<state>', methods = ['GET']) #You will need to look up how scrap data from this website: https://realpython.com/beautiful-soup-web-scraper-python/
 @authenticate.login_required
 def get_covid_data(state):
     r = requests.get(f"https://www.worldometers.info/coronavirus/usa/{state}")
@@ -76,17 +73,22 @@ def get_covid_data(state):
     print(json_string)
     return json_string
 
-
-# Add new user
-@app.route('/Update/<user>/<passw>', methods=['POST']) #Will only accept HTTP POST requests
+#Add new user
+@app.route('/Update/', methods = ['POST']) #Will only accept HTTP POST requests
 @authenticate.login_required
-def post_user_pass(user, passw):
+def post_user_pass():
     # Make sure to insert new user into the dictionary of users
-    hashPass = generate_password_hash(passw)
-    users.update({user: hashPass})
-    newUser = {user: hashPass}
-    return newUser
+    credentials = request.form
+    # print(credentials)
+
+    hashPass = generate_password_hash(credentials["new_pass"])
+    users.update({credentials["new_user"]: hashPass})
+    # print(users)
+    if credentials["new_user"] in users and check_password_hash(users.get(credentials["new_user"]), credentials["new_pass"]):
+        return "Success"
+    else:
+        return "Failure"    
 
 
 if __name__== "__main__":
-    app.run(host='127.0.0.1', port=8081, debug = True)
+    app.run(host='127.0.0.1', port = 8081, debug = True)
