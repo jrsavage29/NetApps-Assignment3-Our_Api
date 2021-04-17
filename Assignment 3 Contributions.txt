@@ -6,7 +6,7 @@ Jamahl
 - Setup routes required for project 
 - Completed Marvel API route requests
 - Completed Weather API route requests
--
+- Fixed Adding new user method
 -
 
 Chance
