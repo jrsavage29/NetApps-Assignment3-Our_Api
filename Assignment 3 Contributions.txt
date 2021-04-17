@@ -10,8 +10,8 @@ Jamahl
 -
 
 Chance
--
--
+- Completed COVID API route request
+- Completed adding new user implementation
 -
 -
 -
