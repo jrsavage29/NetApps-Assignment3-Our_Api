@@ -61,7 +61,7 @@ def post_weather(city):
     scraper_username = request.form["user"]
     scraper_password = request.form["pass"]
 
-    r = requests.post(f'http://127.0.0.1:8081/Weather/{city}', auth = (scraper_username, scraper_password))
+    r = requests.get(f'http://127.0.0.1:8081/Weather/{city}', auth = (scraper_username, scraper_password))
     if r.status_code  == 200:
         return r.json()
     
