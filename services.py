@@ -101,24 +101,28 @@ def post_covid_data(state):
 @app.route('/Update', methods=['POST'])  # Will only accept HTTP POST requests
 @authenticate.login_required
 def post_user_pass():
-    "user=scrape_user?pass=scrape_pass&new_user=user2&new_pass=pass2"
+    #"user=scrape_user?pass=scrape_pass&new_user=user2&new_pass=pass2"
     scraper_username = request.form["user"]
+    print(scraper_username)
     scraper_password = request.form["pass"]
-    newUser = request.form["new_user"]
-    newPass = request.form["new_pass"]
+    print(scraper_password)
+    newUser = request.form['new_user']
+    print(newUser)
+    newPass = request.form['new_pass']
+    print(newPass)
 
-    r = requests.get(f'http://127.0.0.1:8081/Update/', auth=(scraper_username, scraper_password))
+    r = requests.post(f'http://127.0.0.1:8081/Update/{newUser}/{newPass}', auth=(scraper_username, scraper_password))
     if r.status_code == 200:
         print(newUser)
         print(newPass)
         return "success"
-    """
+
     elif r.status_code == 401:
         abort(401)
 
     else:
         abort(400)
-    """
+
     return "failure"
 
 

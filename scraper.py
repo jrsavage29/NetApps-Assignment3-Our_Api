@@ -70,11 +70,7 @@ def get_covid_data(state):
             deaths = num.text.strip()
         elif i == 2:
             recovered = num.text.strip()
-        #print(num.text.strip(), end='\n')
         i += 1
-    #print(cases)
-    #print(deaths)
-    #print(recovered)
     covid_data = {"state": state, "total cases": cases, "deaths": deaths, "total recovered": recovered}
     json_string = json.dumps(covid_data)
     print(json_string)
@@ -82,13 +78,13 @@ def get_covid_data(state):
 
 
 # Add new user
-@app.route('/Update/', methods=['POST']) #Will only accept HTTP POST requests
+@app.route('/Update/<user>/<passw>', methods=['POST']) #Will only accept HTTP POST requests
 @authenticate.login_required
 def post_user_pass(user, passw):
     # Make sure to insert new user into the dictionary of users
-    users.update({user:passw})
-    newUser = {user:passw}
-    print(newUser)
+    hashPass = generate_password_hash(passw)
+    users.update({user: hashPass})
+    newUser = {user: hashPass}
     return newUser
 
 
